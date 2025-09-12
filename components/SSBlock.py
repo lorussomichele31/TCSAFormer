@@ -130,7 +130,6 @@ class SSBlock(nn.Module):
         y = self.gate(qn, y_cmp, y_sel, y_win)  # (B,Nq,C)
         y = y + Q  # (B,Nq,C)
 
-        # --- MLP path expects NHWC; do residual in NHWC then back ---
         y_map = y.view(B, H, W, C)  # (B,H,W,C)
         y_map = self.norm2(y_map + self.mlp(y_map))  # (B,H,W,C)
 

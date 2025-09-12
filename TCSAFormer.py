@@ -10,21 +10,15 @@ from components.SSBlock import SSBlock
 
 class TCSA_Former(nn.Module):
     def __init__(self,
-                 mlp_ratios,
                  depth=[3, 4, 8, 3],
-                 H=[56, 28, 14, 7],
                  in_chans=3,
-                 keep_ratio=[0.5, 0.6, 0.7, 0.9],
-                 merge_ratio=[0.3, 0.2, 0.1, 0.1],
                  num_classes=100,
                  embed_dim=[64, 128, 320, 512],
                  head_dim=64,
                  drop_path_rate=0.,
                  use_checkpoint_stages=[],
                  qk_dims=[None, None, None, None],
-                 pre_norm=True,
                  before_attn_dwconv=3,
-                 # NEW knobs for SSBlock (safe defaults)
                  ss_block_size=8,
                  ss_topk=4,
                  ss_win=7):
@@ -32,7 +26,6 @@ class TCSA_Former(nn.Module):
         self.num_classes = num_classes
         self.num_features = self.embed_dim = embed_dim  # num_features for consistency
 
-        # ---------------- Down / Up / Skip (unchanged) ----------------
         self.downsample_layers = nn.ModuleList()
         self.upsample_layers = nn.ModuleList()
         self.skip_layers = nn.ModuleList()
@@ -71,22 +64,15 @@ class TCSA_Former(nn.Module):
         for i in range(3):
             self.skip_layers.append(Skip(embed_dim[2 - i], embed_dim[2 - i]))
 
-        # ---------------- Stages (ENC + DEC now SSBlock) ----------------
         self.stages = nn.ModuleList()
         self.stages_de = nn.ModuleList()
 
         dp_rates = [x.item() for x in torch.linspace(0, drop_path_rate, sum(depth))]
         cur = 0
         for i in range(4):
-            # Encoder stage: SSBlock stack
             enc_stage = nn.Sequential(
                 *[SSBlock(
                     dim=embed_dim[i],
-                    H=H[i],
-                    stage=i,
-                    keep_ratio=keep_ratio[i],
-                    merge_ratio=merge_ratio[i],
-                    mlp_ratio=mlp_ratios[i],
                     drop_path=dp_rates[cur + j],
                     num_heads=nheads[i],
                     before_attn_dwconv=before_attn_dwconv,
@@ -99,16 +85,10 @@ class TCSA_Former(nn.Module):
                 enc_stage = checkpoint_wrapper(enc_stage)
             self.stages.append(enc_stage)
 
-            # Decoder stage: also SSBlock stack (mirror of your old Block(CAM))
             if i < 3:
                 dec_stage = nn.Sequential(
                     *[SSBlock(
                         dim=embed_dim[2 - i],
-                        H=H[2 - i],
-                        stage=4 + i,
-                        keep_ratio=keep_ratio[2 - i],
-                        merge_ratio=merge_ratio[2 - i],
-                        mlp_ratio=mlp_ratios[2 - i],
                         drop_path=dp_rates[cur + j],
                         num_heads=nheads[2 - i],
                         before_attn_dwconv=before_attn_dwconv,
@@ -121,7 +101,6 @@ class TCSA_Former(nn.Module):
 
             cur += depth[i]
 
-        # ---------------- Head (unchanged) ----------------
         self.output = nn.Conv2d(in_channels=embed_dim[0], out_channels=self.num_classes, kernel_size=1, bias=False)
         self.apply(self._init_weights)
 
@@ -142,31 +121,29 @@ class TCSA_Former(nn.Module):
         out = []
         for i in range(4):
             x = self.downsample_layers[i](x)
-            x = self.stages[i](x)     # SSBlock encoder
+            x = self.stages[i](x)
             out.append(x)
         for i in range(3):
             x = F.interpolate(x, size=(x.size(2) * 2, x.size(3) * 2), mode='bilinear', align_corners=True)
             x = self.upsample_layers[i](x)
             x = out[2 - i] + x
             x = self.skip_layers[i](x)
-            x = self.stages_de[i](x)  # SSBlock decoder
+            x = self.stages_de[i](x)
         x = F.interpolate(x, size=(x.size(2) * 4, x.size(3) * 4), mode='bilinear', align_corners=True)
         x = self.output(x)
         return x
 
 
 class TCSAFormer(nn.Module):
-    def __init__(self, img_size=256, in_chans=3, num_classes=1, n_win=8):
+    def __init__(self, num_classes=1):
         super(TCSAFormer, self).__init__()
         self.TCSAFormer = TCSA_Former(
             depth=[2, 2, 8, 2],
             embed_dim=[64, 128, 256, 512],
-            mlp_ratios=[4, 4, 4, 4],
             before_attn_dwconv=3,
             num_classes=num_classes,
             qk_dims=[64, 128, 256, 512],
             head_dim=32,
-            pre_norm=True,
             use_checkpoint_stages=[],
             drop_path_rate=0.2,
             # SSBlock knobs (tune freely)
@@ -185,8 +162,6 @@ if __name__ == "__main__":
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     model = TCSAFormer(
-        img_size=256,
-        in_chans=3,
         num_classes=1,
     ).to(device)
 
