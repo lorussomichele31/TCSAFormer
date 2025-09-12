@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
 
-from Attention import SSGating, SSMHA
-from DBFFN import DBFFN
-from timm.models.layers import DropPath
+from components.Attention import SSGating, SSMHA
+from components.DBFFN import DBFFN
+from timm.layers import DropPath
 import torch.nn.functional as F
 
 class SSBlock(nn.Module):
@@ -16,11 +16,6 @@ class SSBlock(nn.Module):
     """
     def __init__(self,
                  dim: int,
-                 H: int,                   # nominal (for logs only)
-                 mlp_ratio: float,
-                 stage: int,
-                 keep_ratio: float,        # kept for API compat (not used)
-                 merge_ratio: float,       # kept for API compat (not used)
                  drop_path: float = 0.0,
                  num_heads: int = 8,
                  before_attn_dwconv: int = 3,
@@ -111,8 +106,8 @@ class SSBlock(nn.Module):
         # DW positional term
         x = x + (self.pos_embed(x) if isinstance(self.pos_embed, nn.Conv2d) else 0)
 
-        feat = self._to_nhwc(x)                  # (B,H,W,C)
-        Q = feat.view(B, H*W, C)                 # (B,Nq,C)
+        feat = self._to_nhwc(x)  # (B,H,W,C)
+        Q = feat.view(B, H * W, C)  # (B,Nq,C)
 
         # compressed tokens (all blocks)
         blk_mean, nH, nW = self._blocks_mean(feat, H, W)  # (B,nB,C)
@@ -121,22 +116,25 @@ class SSBlock(nn.Module):
         # selection (top-k blocks)
         scores = self.block_scorer(blk_mean).squeeze(-1)  # (B,nB)
         topk = min(self.topk, nB)
-        _, sel_idx = scores.topk(topk, dim=1)             # (B,topk)
+        _, sel_idx = scores.topk(topk, dim=1)  # (B,topk)
         K_sel = torch.gather(blk_mean, 1, sel_idx.unsqueeze(-1).expand(B, topk, C))  # (B,topk,C)
 
         # three attention paths
-        y_cmp = self.mha_cmp(Q, blk_mean, blk_mean)       # (B,Nq,C)
-        y_sel = self.mha_sel(Q, K_sel, K_sel)             # (B,Nq,C)
-        K_win = self._gather_local(Q, H, W)               # (B,Nq,win^2,C)
-        y_win = self._local_attend(Q, K_win, K_win)       # (B,Nq,C)
+        y_cmp = self.mha_cmp(Q, blk_mean, blk_mean)  # (B,Nq,C)
+        y_sel = self.mha_sel(Q, K_sel, K_sel)  # (B,Nq,C)
+        K_win = self._gather_local(Q, H, W)  # (B,Nq,win^2,C)
+        y_win = self._local_attend(Q, K_win, K_win)  # (B,Nq,C)
 
-        # fuse + FFN (NHWC inside)
+        # fuse
         qn = self.norm1(Q)
-        y  = self.gate(qn, y_cmp, y_sel, y_win)
-        y  = y + Q
-        y  = self.norm2(y + self.mlp(y.view(B, H, W, C)))  # DBFFN expects NHWC
+        y = self.gate(qn, y_cmp, y_sel, y_win)  # (B,Nq,C)
+        y = y + Q  # (B,Nq,C)
 
-        y = y.view(B, H, W, C)
-        y = self._to_nchw(y)
+        # --- MLP path expects NHWC; do residual in NHWC then back ---
+        y_map = y.view(B, H, W, C)  # (B,H,W,C)
+        y_map = self.norm2(y_map + self.mlp(y_map))  # (B,H,W,C)
+
+        # back to NCHW
+        y = self._to_nchw(y_map)  # (B,C,H,W)
         y = self.drop_path(y)
         return y
