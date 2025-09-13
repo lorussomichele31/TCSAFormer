@@ -5,8 +5,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9fae5991-9a15-419f-b5f2-f96d719353d5" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/TCSAFormer.py" beforeDir="false" afterPath="$PROJECT_DIR$/TCSAFormer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/SSBlock.py" beforeDir="false" afterPath="$PROJECT_DIR$/components/SSBlock.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/TCSAFormer/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/train/TrainConfig.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/train/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/train/cvc_dataset_processing.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/train/presets.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/train/train.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/train/train_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/TCSAFormer.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/TCSAFormer.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TCSAFormer.py" beforeDir="false" afterPath="$PROJECT_DIR$/TCSAFormer/TCSAFormer.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,8 +47,10 @@
   "keyToString": {
     "Python.EncoderBlock.executor": "Run",
     "Python.TCSAFormer.executor": "Run",
+    "Python.cvc_dataset_processing.executor": "Run",
     "Python.main.executor": "Run",
     "Python.test.executor": "Run",
+    "Python.train.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
@@ -49,7 +60,12 @@
     "last_opened_file_path": "C:/Users/imprm/PycharmProjects/TCSAFormer/main.py"
   }
 }]]></component>
-  <component name="RunManager">
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\imprm\PycharmProjects\TCSAFormer\TCSAFormer" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.train">
     <configuration name="TCSAFormer" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="TCSAFormer" />
       <option name="ENV_FILES" value="" />
@@ -64,7 +80,7 @@
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/TCSAFormer.py" />
+      <option name="SCRIPT_NAME" value="C:\Users\imprm\PycharmProjects\TCSAFormer\TCSAFormer\TCSAFormer.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -73,6 +89,57 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="cvc_dataset_processing" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="TCSAFormer" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.13 (TCSAFormer)" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/train/cvc_dataset_processing.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="train" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="TCSAFormer" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.13 (TCSAFormer)" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/train/train.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Python.TCSAFormer" />
+      <item itemvalue="Python.cvc_dataset_processing" />
+      <item itemvalue="Python.train" />
+    </list>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
@@ -91,5 +158,16 @@
       <updated>1757355305536</updated>
     </task>
     <servers />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/train/train_utils.py</url>
+          <line>155</line>
+          <option name="timeStamp" value="15" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
