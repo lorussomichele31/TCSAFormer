@@ -13,7 +13,7 @@ PRESETS = {
         save_dir   = Path("checkpoints") / "isic2018",
 
         dataset="isic2018",
-        num_classes=2, resolution=256, epochs=200, batch_size=16,
+        num_classes=2, resolution=256, epochs=200, batch_size=8,
         lr=1e-4, optimizer="adam", weight_decay=0.0,
         loss_type="ce", binary=True, use_cosine=True,
         seed=42,
@@ -27,7 +27,7 @@ PRESETS = {
         save_dir   = Path("checkpoints") / "cvc_clinicdb",
 
         dataset="cvc_clinicdb",
-        num_classes=2, resolution=256, epochs=200, batch_size=1,
+        num_classes=2, resolution=256, epochs=200, batch_size=8,
         lr=1e-4, optimizer="adam", weight_decay=0.0,
         loss_type="ce", binary=True, use_cosine=True,
         seed=42,
@@ -42,7 +42,7 @@ PRESETS = {
 
         dataset="synapse",
         num_classes=9,  # 8 organs + background
-        resolution=224, epochs=400, batch_size=24,
+        resolution=224, epochs=400, batch_size=8,
         lr=1e-4, optimizer="adamw", weight_decay=1e-4,
         loss_type="ce_dice", binary=False, use_cosine=True,
         seed=42,
