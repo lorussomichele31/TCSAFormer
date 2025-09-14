@@ -17,7 +17,7 @@ def benchmark_training(model, train_loader, opt, sched, loss_fn, cfg, device,
 
         # one full training step
         opt.zero_grad(set_to_none=True)
-        with torch.cuda.amp.autocast():
+        with torch.amp.autocast(device_type=device):
             logits = model(xb)
             loss = loss_fn(cfg, logits, yb)
         loss.backward()
