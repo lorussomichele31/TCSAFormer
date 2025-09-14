@@ -9,10 +9,11 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from torchvision.transforms import InterpolationMode
-
-
 from TCSAFormer.TCSAFormer import TCSAFormer
 from TrainConfig import TrainConfig
+from components.SSBlock import SSBlock
+from logging_utils import dice_per_class, TBLogger
+
 
 class DiceLoss(nn.Module):
     def __init__(self, eps=1e-6):
@@ -140,43 +141,113 @@ def loss_fn(cfg: TrainConfig, logits, targets):
         return 0.5 * ce + 0.5 * dl
     else:
         raise ValueError(f"Unknown loss_type {cfg.loss_type}")
-
 def train_one_dataset(cfg: TrainConfig, device):
     train_loader, val_loader = build_dataloaders(cfg, augment_train=True)
     model = build_model(cfg, device)
     opt, sched = build_optim_sched(cfg, model, steps_per_epoch=len(train_loader))
 
+    # --- TensorBoard logger ---
+    tb_dir = os.path.join(cfg.save_dir, "tb")
+    logger = TBLogger(tb_dir)
+
     best_val_dice = -1.0
+    global_step = 0
+    overlay_every = 200       # steps
+    hist_every = 200          # steps
+    attention_every = 200     # steps
+
     for epoch in range(1, cfg.epochs + 1):
         model.train()
         for step, (x, y) in enumerate(train_loader, start=1):
             x = x.to(device, non_blocking=True)
             y = y.to(device, non_blocking=True)
+
             opt.zero_grad(set_to_none=True)
-            logits = model(x)                # expect (N, C, H, W)
+            logits = model(x)                # (N, C, H, W)
+
+            if global_step % attention_every == 0:
+                try:
+                    from train.logging_utils import log_ssblock_attn
+                    # pick a couple of SSBlocks to visualize
+                    blocks_to_log = []
+                    for name, m in model.named_modules():
+                        if isinstance(m, SSBlock):
+                            blocks_to_log.append(m)
+
+                    for i, blk in enumerate(blocks_to_log):
+                        log_ssblock_attn(logger.w, blk, global_step, tag_prefix=f"attn/block{i}",
+                                         heads=min(blk.mha_cmp.h, 4))
+                except Exception as e:
+                    # don't crash training if logging fails
+                    print(f"[warn] attention logging failed: {e}")
+
             loss = loss_fn(cfg, logits, y)
             loss.backward()
+
+            # log gradient histograms occasionally
+            logger.log_grads_hist(model, global_step, every_n=hist_every)
+
             opt.step()
-            if sched is not None: sched.step()
+            if sched is not None:
+                sched.step()
+
+            # --- step logs ---
+            logger.log_scalar("train/loss", loss, global_step)
+            logger.log_lr(opt, global_step)
+
+            # overlay (image | GT | Pred) occasionally
+            if global_step % overlay_every == 0:
+                logger.log_overlay(x, logits, y, step=global_step, tag="viz_train/img_gt_pred", max_items=4)
+
+            # weight histograms occasionally
+            logger.log_weights_hist(model, global_step, every_n=hist_every)
+
             print(f"Step {step}: loss = {loss.item():.4f}")
 
-        # validation
-        model.eval()
-        val_losses, val_dices = [], []
-        with torch.no_grad():
-            for x, y in val_loader:
-                x = x.to(device); y = y.to(device)
-                logits = model(x)
-                val_losses.append(loss_fn(cfg, logits, y).item())
-                val_dices.append(compute_metrics(logits, y, cfg.num_classes, cfg.binary)["dice"])
-        mean_val_loss = float(np.mean(val_losses)) if val_losses else math.nan
-        mean_val_dice = float(np.mean(val_dices)) if val_dices else math.nan
+            global_step += 1
 
-        print(f"[{cfg.dataset}] Epoch {epoch}/{cfg.epochs} | val_loss={mean_val_loss:.4f} | val_dice={mean_val_dice:.4f}")
+        # ===== Validation (per epoch) =====
+        model.eval()
+        val_losses = []
+        per_class_dice_accum = []
+
+        with torch.no_grad():
+            for x_val, y_val in val_loader:
+                x_val = x_val.to(device, non_blocking=True)
+                y_val = y_val.to(device, non_blocking=True)
+
+                logits_val = model(x_val)
+                val_losses.append(loss_fn(cfg, logits_val, y_val).item())
+
+                # per-class Dice (foreground by default)
+                dices = dice_per_class(logits_val, y_val, cfg.num_classes, ignore_background=cfg.binary is False)
+                per_class_dice_accum.append(dices)
+
+            mean_val_loss = float(np.mean(val_losses)) if val_losses else math.nan
+
+            mean_per_class = None
+            mean_fg_dice = math.nan
+            if per_class_dice_accum:
+                # average over batches → list of per-class dice
+                mean_per_class = np.array(per_class_dice_accum).mean(axis=0).tolist()
+                mean_fg_dice = float(np.mean(mean_per_class))
+
+            # --- epoch logs ---
+            logger.log_scalar("val/loss", mean_val_loss, epoch)
+            logger.log_scalar("val/dice_mean_fg", mean_fg_dice, epoch)
+            if mean_per_class is not None:
+                for ci, d in enumerate(mean_per_class, start=1):   # c1.. excludes background if ignore=True
+                    logger.log_scalar(f"val/dice_c{ci}", d, epoch)
+
+            # one validation overlay (last batch) each epoch
+            if 'x_val' in locals():
+                logger.log_overlay(x_val, logits_val, y_val, step=epoch, tag="viz_val/img_gt_pred", max_items=4)
+
+        print(f"[{cfg.dataset}] Epoch {epoch}/{cfg.epochs} | val_loss={mean_val_loss:.4f} | val_dice_fg_mean={mean_fg_dice:.4f}")
 
         # save the best checkpoint by Dice
-        if mean_val_dice > best_val_dice:
-            best_val_dice = mean_val_dice
+        if mean_fg_dice > best_val_dice:
+            best_val_dice = mean_fg_dice
             ckpt_path = os.path.join(cfg.save_dir, f"{cfg.dataset}_best.pt")
             save_ckpt({"model": model.state_dict(), "epoch": epoch, "val_dice": best_val_dice, "cfg": vars(cfg)}, ckpt_path)
 

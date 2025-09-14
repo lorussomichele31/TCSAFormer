@@ -5,10 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9fae5991-9a15-419f-b5f2-f96d719353d5" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/TCSAFormer.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/TCSAFormer.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/train/logging_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train/presets.py" beforeDir="false" afterPath="$PROJECT_DIR$/train/presets.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/Attention.py" beforeDir="false" afterPath="$PROJECT_DIR$/components/Attention.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/SSBlock.py" beforeDir="false" afterPath="$PROJECT_DIR$/components/SSBlock.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/train/train_script.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train/train_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/train/train_utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,6 +48,7 @@
     "Python.main.executor": "Run",
     "Python.test.executor": "Run",
     "Python.train.executor": "Run",
+    "Python.train_script.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
@@ -65,7 +70,7 @@
       <recent name="C:\Users\imprm\PycharmProjects\TCSAFormer\TCSAFormer" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.train">
+  <component name="RunManager" selected="Python.train_script">
     <configuration name="TCSAFormer" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="TCSAFormer" />
       <option name="ENV_FILES" value="" />
@@ -113,7 +118,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="train" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+    <configuration name="train_script" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="TCSAFormer" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -127,7 +132,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/train/train.py" />
+      <option name="SCRIPT_NAME" value="C:\Users\imprm\OneDrive\Desktop\AI_portfolio\TCSAFormer\train\train_script.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -139,12 +144,13 @@
     <list>
       <item itemvalue="Python.TCSAFormer" />
       <item itemvalue="Python.cvc_dataset_processing" />
-      <item itemvalue="Python.train" />
+      <item itemvalue="Python.train_script" />
     </list>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
+        <option value="bundled-js-predefined-d6986cc7102b-b598e85cdad2-JavaScript-PY-252.25557.178" />
         <option value="bundled-python-sdk-ce6832f46686-7b97d883f26b-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-252.25557.178" />
       </set>
     </attachedChunks>
@@ -157,7 +163,8 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1757355305536</updated>
-      <workItem from="1757802153961" duration="1357000" />
+      <workItem from="1757802153961" duration="1916000" />
+      <workItem from="1757852185325" duration="6656000" />
     </task>
     <servers />
   </component>
@@ -165,7 +172,7 @@
     <option name="version" value="3" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/TCSAFormer$train.coverage" NAME="train Coverage Results" MODIFIED="1757803820464" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/TCSAFormer$train.coverage" NAME="train_script Coverage Results" MODIFIED="1757857913501" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/TCSAFormer$TCSAFormer.coverage" NAME="TCSAFormer Coverage Results" MODIFIED="1757803658623" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
   </component>
 </project>

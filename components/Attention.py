@@ -4,6 +4,7 @@ class SSMHA(nn.Module):
     """Multi-head attention over Q:(B,Nq,C), K/V:(B,Nk,C) -> (B,Nq,C)"""
     def __init__(self, dim: int, heads: int, attn_drop=0.0, proj_drop=0.0):
         super().__init__()
+        self.last_attn = None
         assert dim % heads == 0
         self.h = heads
         self.d = dim // heads
@@ -26,6 +27,7 @@ class SSMHA(nn.Module):
 
         attn = (q @ k.transpose(-1, -2)) * self.scale        # (B,h,Nq,Nk)
         attn = attn.softmax(dim=-1)
+        self.last_attn = attn.detach().cpu()
         attn = self.drop_attn(attn)
         out = (attn @ v).transpose(1, 2).contiguous().view(B, Nq, h * d)
         out = self.drop_proj(self.proj(out))                 # (B,Nq,C)
