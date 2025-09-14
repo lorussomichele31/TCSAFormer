@@ -13,6 +13,7 @@ from TCSAFormer.TCSAFormer import TCSAFormer
 from TrainConfig import TrainConfig
 from components.SSBlock import SSBlock
 from logging_utils import dice_per_class, TBLogger
+from speed_banchmark import benchmark_training
 
 
 class DiceLoss(nn.Module):
@@ -141,10 +142,13 @@ def loss_fn(cfg: TrainConfig, logits, targets):
         return 0.5 * ce + 0.5 * dl
     else:
         raise ValueError(f"Unknown loss_type {cfg.loss_type}")
+
 def train_one_dataset(cfg: TrainConfig, device):
     train_loader, val_loader = build_dataloaders(cfg, augment_train=True)
     model = build_model(cfg, device)
     opt, sched = build_optim_sched(cfg, model, steps_per_epoch=len(train_loader))
+
+    benchmark_training(model, train_loader, opt, sched, loss_fn, cfg, device)
 
     # --- TensorBoard logger ---
     tb_dir = os.path.join(cfg.save_dir, "tb")
