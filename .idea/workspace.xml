@@ -5,8 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9fae5991-9a15-419f-b5f2-f96d719353d5" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/train/speed_banchmark.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train/TrainConfig.py" beforeDir="false" afterPath="$PROJECT_DIR$/train/TrainConfig.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train/presets.py" beforeDir="false" afterPath="$PROJECT_DIR$/train/presets.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train/train_script.py" beforeDir="false" afterPath="$PROJECT_DIR$/train/train_script.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/train/train_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/train/train_utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -160,14 +162,27 @@
       <updated>1757355305536</updated>
       <workItem from="1757802153961" duration="1916000" />
       <workItem from="1757852185325" duration="8072000" />
+      <workItem from="1757918858508" duration="3364000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/train/train_utils.py</url>
+          <line>177</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/TCSAFormer$train.coverage" NAME="train_script Coverage Results" MODIFIED="1757859542047" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/TCSAFormer$train_script.coverage" NAME="train_script Coverage Results" MODIFIED="1757922187188" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/TCSAFormer$train.coverage" NAME="train_script Coverage Results" MODIFIED="1757864855600" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/TCSAFormer$TCSAFormer.coverage" NAME="TCSAFormer Coverage Results" MODIFIED="1757803658623" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
   </component>
 </project>

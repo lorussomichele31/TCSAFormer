@@ -1,4 +1,4 @@
-
+import glob
 import os, math, random
 from pathlib import Path
 import numpy as np
@@ -6,6 +6,7 @@ from PIL import Image
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch import amp
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from torchvision.transforms import InterpolationMode
@@ -102,16 +103,28 @@ def build_model(cfg: TrainConfig, device):
     model.to(device)
     return model
 
-def build_optim_sched(cfg: TrainConfig, model, steps_per_epoch):
+def build_optim_sched(cfg: TrainConfig, model, steps_per_epoch: int):
+    # Effective LR with multiplier or finetune default
+    lr_mult = cfg.lr_mult
+    if cfg.finetune and cfg.lr_mult == 1.0:
+        lr_mult = 0.1  # sensible default for FT unless user set something else
+    eff_lr = cfg.lr * lr_mult
+
     if cfg.optimizer.lower() == "adamw":
-        opt = torch.optim.AdamW(model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay)
+        opt = torch.optim.AdamW(model.parameters(),
+                                lr=eff_lr, weight_decay=cfg.weight_decay, fused=True)
     else:
-        opt = torch.optim.Adam(model.parameters(), lr=cfg.lr)
-    if cfg.use_cosine:
+        opt = torch.optim.Adam(model.parameters(), lr=eff_lr)
+
+    sched = None
+    if cfg.use_plateau:
+        # step once per epoch with validation metric (we’ll call sched.step(val_loss))
+        sched = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            opt, mode="min", factor=0.5, patience=3, min_lr=eff_lr*0.1
+        )
+    elif cfg.use_cosine:
         total_steps = cfg.epochs * steps_per_epoch
         sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=total_steps)
-    else:
-        sched = None
     return opt, sched
 
 def compute_metrics(logits, targets, num_classes, binary=False):
@@ -143,78 +156,86 @@ def loss_fn(cfg: TrainConfig, logits, targets):
     else:
         raise ValueError(f"Unknown loss_type {cfg.loss_type}")
 
+
+def load_weights_into(model, ckpt_path: str, device: str = "cuda"):
+    import torch
+    ckpt = torch.load(ckpt_path, map_location=device)
+    state = ckpt.get("model", ckpt)
+    missing, unexpected = model.load_state_dict(state, strict=False)
+    print(f"[resume] loaded checkpoint: {ckpt_path}")
+    if missing:    print("[resume] missing keys:", missing)
+    if unexpected: print("[resume] unexpected keys:", unexpected)
+    return int(ckpt.get("epoch", 0))
+
 def train_one_dataset(cfg: TrainConfig, device):
+    # Build data + model
     train_loader, val_loader = build_dataloaders(cfg, augment_train=True)
-    model = build_model(cfg, device)
+    model = build_model(cfg, device).to(device)
+
+    # Auto-resume if requested and something exists
+    start_epoch = 0
+    if cfg.resume:
+        ckpt_path = cfg.checkpoint_path
+        if ckpt_path:
+            start_epoch = load_weights_into(model, ckpt_path, device=device)
+
+    if cfg.finetune:
+        # Example: turn on clipping automatically for FT
+        if not cfg.clip_grad:
+            cfg.clip_grad = True
+
+        # Example: prefer plateau for FT unless user set it
+        if not cfg.use_plateau and not cfg.use_cosine:
+            cfg.use_plateau = True
+
     opt, sched = build_optim_sched(cfg, model, steps_per_epoch=len(train_loader))
 
-    benchmark_training(model, train_loader, opt, sched, loss_fn, cfg, device)
+    # AMP policy
+    use_bf16 = torch.cuda.is_bf16_supported()
+    scaler = amp.GradScaler("cuda", enabled=not use_bf16)
 
-    # --- TensorBoard logger ---
+    # Logging
     tb_dir = os.path.join(cfg.save_dir, "tb")
     logger = TBLogger(tb_dir)
 
-    best_val_dice = -1.0
+    best_val_dice = -1.0 if start_epoch == 0 else float("-inf")
     global_step = 0
-    overlay_every = 200       # steps
-    hist_every = 200          # steps
-    attention_every = 200     # steps
 
-    for epoch in range(1, cfg.epochs + 1):
+    for epoch in range(start_epoch + 1, start_epoch + cfg.epochs + 1):
         model.train()
         for step, (x, y) in enumerate(train_loader, start=1):
-            x = x.to(device, non_blocking=True)
+            x = x.to(device, non_blocking=True, memory_format=torch.channels_last)
             y = y.to(device, non_blocking=True)
 
             opt.zero_grad(set_to_none=True)
-            logits = model(x)                # (N, C, H, W)
+            with amp.autocast("cuda", dtype=torch.bfloat16 if use_bf16 else torch.float16):
+                logits = model(x)
+                loss = loss_fn(cfg, logits, y)
 
-            if global_step % attention_every == 0:
-                try:
-                    from train.logging_utils import log_ssblock_attn
-                    # pick a couple of SSBlocks to visualize
-                    blocks_to_log = []
-                    for name, m in model.named_modules():
-                        if isinstance(m, SSBlock):
-                            blocks_to_log.append(m)
+            if use_bf16:
+                loss.backward()
+                if cfg.clip_grad:
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), cfg.clip_max_norm)
+                opt.step()
+            else:
+                scaler.scale(loss).backward()
+                if cfg.clip_grad:
+                    scaler.unscale_(opt)
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), cfg.clip_max_norm)
+                scaler.step(opt)
+                scaler.update()
 
-                    for i, blk in enumerate(blocks_to_log):
-                        log_ssblock_attn(logger.w, blk, global_step, tag_prefix=f"attn/block{i}",
-                                         heads=min(blk.mha_cmp.h, 4))
-                except Exception as e:
-                    # don't crash training if logging fails
-                    print(f"[warn] attention logging failed: {e}")
-
-            loss = loss_fn(cfg, logits, y)
-            loss.backward()
-
-            # log gradient histograms occasionally
-            logger.log_grads_hist(model, global_step, every_n=hist_every)
-
-            opt.step()
-            if sched is not None:
+            if sched is not None and not cfg.use_plateau:
+                # step-per-batch schedulers (e.g., cosine with total_steps)
                 sched.step()
 
-            # --- step logs ---
             logger.log_scalar("train/loss", loss, global_step)
             logger.log_lr(opt, global_step)
-
-            # overlay (image | GT | Pred) occasionally
-            if global_step % overlay_every == 0:
-                logger.log_overlay(x, logits, y, step=global_step, tag="viz_train/img_gt_pred", max_items=4)
-
-            # weight histograms occasionally
-            logger.log_weights_hist(model, global_step, every_n=hist_every)
-
-            print(f"Step {step}: loss = {loss.item():.4f}")
-
             global_step += 1
 
-        # ===== Validation (per epoch) =====
+        # ===== Validation per epoch =====
         model.eval()
-        val_losses = []
-        per_class_dice_accum = []
-
+        val_losses, per_class_dice_accum = [], []
         with torch.no_grad():
             for x_val, y_val in val_loader:
                 x_val = x_val.to(device, non_blocking=True)
@@ -223,38 +244,45 @@ def train_one_dataset(cfg: TrainConfig, device):
                 logits_val = model(x_val)
                 val_losses.append(loss_fn(cfg, logits_val, y_val).item())
 
-                # per-class Dice (foreground by default)
-                dices = dice_per_class(logits_val, y_val, cfg.num_classes, ignore_background=cfg.binary is False)
-                per_class_dice_accum.append(dices)
+                # returns a list/1D array per batch (per-class dice, typically foreground-only)
+                dices = dice_per_class(
+                    logits_val, y_val, cfg.num_classes,
+                    ignore_background=(cfg.binary is False)
+                )
+                per_class_dice_accum.append(np.array(dices, dtype=np.float32))
 
-            mean_val_loss = float(np.mean(val_losses)) if val_losses else math.nan
+        mean_val_loss = float(np.mean(val_losses)) if val_losses else math.nan
 
-            mean_per_class = None
+        # --- make sure we produce a scalar for the main metric ---
+        if per_class_dice_accum:
+            arr = np.stack(per_class_dice_accum, axis=0)  # shape: (num_batches, num_classes_eff)
+            class_means = arr.mean(axis=0)  # per-class vector
+            mean_fg_dice = float(class_means.mean())  # single scalar (overall FG mean)
+        else:
+            class_means = None
             mean_fg_dice = math.nan
-            if per_class_dice_accum:
-                # average over batches → list of per-class dice
-                mean_per_class = np.array(per_class_dice_accum).mean(axis=0).tolist()
-                mean_fg_dice = float(np.mean(mean_per_class))
 
-            # --- epoch logs ---
-            logger.log_scalar("val/loss", mean_val_loss, epoch)
-            logger.log_scalar("val/dice_mean_fg", mean_fg_dice, epoch)
-            if mean_per_class is not None:
-                for ci, d in enumerate(mean_per_class, start=1):   # c1.. excludes background if ignore=True
-                    logger.log_scalar(f"val/dice_c{ci}", d, epoch)
+        # --- epoch logs ---
+        logger.log_scalar("val/loss", mean_val_loss, epoch)
+        logger.log_scalar("val/dice_mean_fg", mean_fg_dice, epoch)  # scalar ✅
+        if class_means is not None:
+            for ci, d in enumerate(class_means, start=1):
+                logger.log_scalar(f"val/dice_c{ci}", float(d), epoch)
 
-            # one validation overlay (last batch) each epoch
-            if 'x_val' in locals():
-                logger.log_overlay(x_val, logits_val, y_val, step=epoch, tag="viz_val/img_gt_pred", max_items=4)
+        # one validation overlay (last batch) each epoch
+        if 'x_val' in locals():
+            logger.log_overlay(x_val, logits_val, y_val, step=epoch, tag="viz_val/img_gt_pred", max_items=4)
 
-        print(f"[{cfg.dataset}] Epoch {epoch}/{cfg.epochs} | val_loss={mean_val_loss:.4f} | val_dice_fg_mean={mean_fg_dice:.4f}")
+        print(f"[{cfg.dataset}] Epoch {epoch}/{cfg.epochs} | "
+              f"val_loss={mean_val_loss:.4f} | val_dice_fg_mean={mean_fg_dice:.4f}")
 
-        # save the best checkpoint by Dice
+        # Save best by Dice
         if mean_fg_dice > best_val_dice:
             best_val_dice = mean_fg_dice
             ckpt_path = os.path.join(cfg.save_dir, f"{cfg.dataset}_best.pt")
-            save_ckpt({"model": model.state_dict(), "epoch": epoch, "val_dice": best_val_dice, "cfg": vars(cfg)}, ckpt_path)
+            save_ckpt({"model": model.state_dict(), "epoch": epoch,
+                       "val_dice": best_val_dice, "cfg": vars(cfg)}, ckpt_path)
 
-    # save last
+    # Save last
     last_path = os.path.join(cfg.save_dir, f"{cfg.dataset}_last.pt")
     save_ckpt({"model": model.state_dict(), "epoch": cfg.epochs, "cfg": vars(cfg)}, last_path)
