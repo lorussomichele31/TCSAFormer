@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from TrainConfig import TrainConfig
+from train.TrainConfig import TrainConfig
 
 DATA_DIR = Path(__file__).parent / "datasets"
 

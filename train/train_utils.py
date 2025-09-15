@@ -11,10 +11,8 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from torchvision.transforms import InterpolationMode
 from TCSAFormer.TCSAFormer import TCSAFormer
-from TrainConfig import TrainConfig
-from components.SSBlock import SSBlock
-from logging_utils import dice_per_class, TBLogger
-from speed_banchmark import benchmark_training
+from train.TrainConfig import TrainConfig
+from train.logging_utils import dice_per_class, TBLogger
 
 
 class DiceLoss(nn.Module):
