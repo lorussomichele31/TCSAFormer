@@ -5,12 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9fae5991-9a15-419f-b5f2-f96d719353d5" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/inference/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/inference/inference_script.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/inference/inference_utils.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/export_tensorboard.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train/presets.py" beforeDir="false" afterPath="$PROJECT_DIR$/train/presets.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train/train_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/train/train_utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,38 +34,38 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.EncoderBlock.executor": "Run",
-    "Python.TCSAFormer.executor": "Run",
-    "Python.cvc_dataset_processing.executor": "Run",
-    "Python.inference_script.executor": "Run",
-    "Python.main.executor": "Run",
-    "Python.test.executor": "Run",
-    "Python.train.executor": "Run",
-    "Python.train_script.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "master",
-    "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "C:/Users/imprm/OneDrive/Desktop/AI_portfolio/TCSAFormer",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "shared-indexes",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.EncoderBlock.executor&quot;: &quot;Run&quot;,
+    &quot;Python.TCSAFormer.executor&quot;: &quot;Run&quot;,
+    &quot;Python.cvc_dataset_processing.executor&quot;: &quot;Run&quot;,
+    &quot;Python.inference_script.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test.executor&quot;: &quot;Run&quot;,
+    &quot;Python.train.executor&quot;: &quot;Run&quot;,
+    &quot;Python.train_script.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/imprm/OneDrive/Desktop/AI_portfolio/TCSAFormer&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;shared-indexes&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\imprm\PycharmProjects\TCSAFormer\TCSAFormer" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.inference_script">
+  <component name="RunManager" selected="Python.TCSAFormer">
     <configuration name="TCSAFormer" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="TCSAFormer" />
       <option name="ENV_FILES" value="" />
@@ -168,8 +164,8 @@
     <list>
       <item itemvalue="Python.TCSAFormer" />
       <item itemvalue="Python.cvc_dataset_processing" />
-      <item itemvalue="Python.train_script" />
       <item itemvalue="Python.inference_script" />
+      <item itemvalue="Python.train_script" />
     </list>
   </component>
   <component name="SharedIndexes">
@@ -190,7 +186,9 @@
       <updated>1757355305536</updated>
       <workItem from="1757802153961" duration="1916000" />
       <workItem from="1757852185325" duration="8072000" />
-      <workItem from="1757918858508" duration="6004000" />
+      <workItem from="1757918858508" duration="6336000" />
+      <workItem from="1758697823952" duration="4247000" />
+      <workItem from="1758744280604" duration="2106000" />
     </task>
     <servers />
   </component>
