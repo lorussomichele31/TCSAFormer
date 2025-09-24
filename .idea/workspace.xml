@@ -5,8 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9fae5991-9a15-419f-b5f2-f96d719353d5" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/export_tensorboard.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -188,7 +188,7 @@
       <workItem from="1757852185325" duration="8072000" />
       <workItem from="1757918858508" duration="6336000" />
       <workItem from="1758697823952" duration="4247000" />
-      <workItem from="1758744280604" duration="2106000" />
+      <workItem from="1758744280604" duration="2835000" />
     </task>
     <servers />
   </component>
